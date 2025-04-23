@@ -1,0 +1,49 @@
+@bot.command(name="track_meals")
+async def track_meal(ctx):
+    # Get current date
+    current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    # Send initial message to prompt meal details input
+    await ctx.send(f"Enter your meal details for {current_date}:")
+
+    # Ask for breakfast
+    breakfast = "not eaten"  # Default to "not eaten"
+    breakfast_eaten = await ask_question(ctx, "Did you eat breakfast today? (yes/no): ")
+    if breakfast_eaten == "yes":
+        breakfast_meal = await ask_question(ctx, "What did you have for breakfast? (e.g., 'cereal', 'eggs', etc.): ")
+        breakfast_serving = await ask_question(ctx, "How much did you eat for breakfast? (e.g., '1 plate', '200g', etc.): ")
+        breakfast = {
+            "meal": breakfast_meal,
+            "serving_size": breakfast_serving
+        }
+
+    # Ask for lunch
+    lunch = "not eaten"  # Default to "not eaten"
+    lunch_eaten = await ask_question(ctx, "Did you eat lunch today? (yes/no): ")
+    if lunch_eaten == "yes":
+        lunch_meal = await ask_question(ctx, "What did you have for lunch? (e.g., 'sandwich', 'salad', etc.): ")
+        lunch_serving = await ask_question(ctx, "How much did you eat for lunch? (e.g., '1 sandwich', '300g', etc.): ")
+        lunch = {
+            "meal": lunch_meal,
+            "serving_size": lunch_serving
+        }
+
+    # Ask for dinner
+    dinner = "not eaten"  # Default to "not eaten"
+    dinner_eaten = await ask_question(ctx, "Did you eat dinner today? (yes/no): ")
+    if dinner_eaten == "yes":
+        dinner_meal = await ask_question(ctx, "What did you have for dinner? (e.g., 'pasta', 'chicken', etc.): ")
+        dinner_serving = await ask_question(ctx, "How much did you eat for dinner? (e.g., '1 plate', '250g', etc.): ")
+        dinner = {
+            "meal": dinner_meal,
+            "serving_size": dinner_serving
+        }
+
+    # Get user_id (for simplicity, we'll use the author's ID here)
+    user_id = str(ctx.author.id)
+
+    # Add the meal data to the tracker
+    add_meal_data(user_id, current_date, breakfast, lunch, dinner)
+
+    # Inform the user that the data has been recorded
+    await ctx.send(f"Your meal details for {current_date} have been recorded!")
