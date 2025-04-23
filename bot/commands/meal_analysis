@@ -1,0 +1,74 @@
+@bot.command(name="meal_analysis")
+async def meal_analysis(ctx):
+    """Analyze the user's meal data from the meal tracker."""
+    user_id = str(ctx.author.id)
+    current_date = datetime.datetime.now().strftime('%Y-%m-%d')
+
+    # Load meal data from the meal tracker
+    meal_data = load_meal_data()
+    # Check if there's meal data for the current user
+    if user_id not in meal_data or current_date not in meal_data[user_id]:
+        await ctx.send(f"No meal data found for {current_date}. Please track your meals first.")
+        return
+    # Extract the meal data for the specific date
+    meals = meal_data[user_id]
+    # Prepare the meal data for analysis
+    meals=str(meals)
+    # Send the meal data to the LLM for analysis
+    profiles = load_profiles()
+    user_profile=profiles.get(str(ctx.author.id))
+    meal_analysis_prompt_template = PromptTemplate(
+    input_variables=["meals", "user_profile"],
+    template="""
+    You are a certified nutritionist. Analyze the user's meal intake based on their meals take and comaped with overall calorie count follow the given fomrat and the provided meal data and provide meal analysis .
+
+    **User Profile**
+    {user_profile}
+
+    **Meal Data**
+    {meals}
+
+    **Daily Meal Analysis Format**
+
+    For each date in the provided meal data, analyze the meals using the format below:
+
+    **Date**: [Extract from the meal data]
+
+    For each meal interval (e.g., Breakfast, Lunch, Dinner, Snacks), provide:
+
+    **Meal Interval**: [e.g., Breakfast]
+
+    **Food Items**:
+    - **Item**: [Name of the food]
+      - **Serving Size**: [Standard serving size]
+      - **Total Calories**: [Estimated total calories]
+      - **Macronutrients**:
+        - **Carbohydrates**: [g]
+        - **Fats**: [g]
+        - **Protein**: [g]
+
+    **Remark**: [Is this meal healthy or not for the user based on their profile?]
+    **Reason**: [Brief explanation – e.g., high in protein and fiber, excessive sugar, etc.]
+
+    ---
+
+    **Overall Daily Summary**:
+    - **Total Calories Consumed**: [Sum of all meals]
+    - **User's Recommended Calorie Intake**: [Extracted from user_profile]
+    - **% of Daily Intake Consumed**: [(Total Calories Consumed / Recommended Intake) * 100]%
+    - **Macronutrient Balance**: [Carbs/Fats/Protein – grams or % split]
+    - **General Health Assessment**: [e.g., Healthy, Moderate, Needs Improvement]
+    - **Suggestions**: [Improvements or positive reinforcement]
+
+    End of Analysis
+    """
+    )
+
+    # Use the LLMChain to generate the meal analysis
+    meal_analysis_chain = LLMChain(llm=llm, prompt=meal_analysis_prompt_template)
+
+    try:
+        analysis = meal_analysis_chain.run(meals=meals, user_profile=user_profile)
+        await ctx.send(f"Meal Analysis:\n{analysis}")
+    except Exception as e:
+        await ctx.send(f"An error occurred while analyzing meals: {str(e)}")
