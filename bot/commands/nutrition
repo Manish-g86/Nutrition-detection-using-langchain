@@ -1,0 +1,11 @@
+@bot.command()
+async def nutrition(ctx):
+    """Handle nutrition query"""
+    foodbot=FoodBot()
+    profiles = load_profiles()
+    user_profile = profiles.get(str(ctx.author.id), None)
+    if user_profile:
+        # Check if the user has a profile and call the `handle_nutrition` function
+        await foodbot.handle_nutrition(ctx)
+    else:
+        await ctx.send("Please set up your profile first using /setup_profile.")
