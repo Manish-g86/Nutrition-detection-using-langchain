@@ -1,0 +1,108 @@
+@bot.command()
+async def update_profile(ctx):
+    """Allow users to update their profile details."""
+    profiles = load_profiles()
+    # Check if the user already has a profile
+    if str(ctx.author.id) not in profiles:
+        await ctx.send("You don't have a profile set up yet. Please use /setup_profile to create one.")
+        return
+    user_profile = profiles[str(ctx.author.id)]
+    await ctx.send("Let's update your profile! You can choose which details to update:")
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+    # Update age
+    while True:
+        await ctx.send("What is your new age?")
+        try:
+            age_msg = await bot.wait_for('message', check=check, timeout=60)
+            age = int(age_msg.content)
+            if age <= 0 or age > 100:
+                raise ValueError("Age must be a positive numberand valid.")
+            break  # Exit the loop if input is valid
+        except ValueError:
+            await ctx.send("Please enter a valid positive integer for age.")
+        except TimeoutError:
+            await ctx.send("You took too long to respond. Please try again.")
+            return
+    # Update gender
+    while True:
+        await ctx.send("What is your gender? (male/female)")
+        gender_msg = await bot.wait_for('message', check=check, timeout=60)
+        gender = gender_msg.content.lower()
+        if gender in ['male', 'female']:
+            break  # Exit the loop if input is valid
+        else:
+            await ctx.send("Please enter 'male' or 'female' for gender.")
+
+    # Update weight
+    while True:
+        await ctx.send("What is your new weight in kg?")
+        try:
+            weight_msg = await bot.wait_for('message', check=check, timeout=60)
+            weight = float(weight_msg.content)
+            if weight <= 0:
+                raise ValueError("Weight must be a positive number.")
+            break  # Exit the loop if input is valid
+        except ValueError:
+            await ctx.send("Please enter a valid positive number for weight.")
+        except TimeoutError:
+            await ctx.send("You took too long to respond. Please try again.")
+            return
+
+    # Update height
+    while True:
+        await ctx.send("What is your new height in cm?")
+        try:
+            height_msg = await bot.wait_for('message', check=check, timeout=60)
+            height = float(height_msg.content)
+            if height <= 0:
+                raise ValueError("Height must be a positive number.")
+            break  # Exit the loop if input is valid
+        except ValueError:
+            await ctx.send("Please enter a valid positive number for height.")
+        except TimeoutError:
+            await ctx.send("You took too long to respond. Please try again.")
+            return
+
+    # Update activity level
+    while True:
+        await ctx.send("What is your new activity level? (sedentary, lightly_active, moderately_active, very_active, extra_active)")
+        activity_level_msg = await bot.wait_for('message', check=check, timeout=60)
+        activity_level = activity_level_msg.content.lower()
+        if activity_level in ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extra_active']:
+            break  # Exit the loop if input is valid
+        else:
+            await ctx.send("Please enter a valid activity level from the list.")
+
+    # Update goal
+    while True:
+        await ctx.send("What is your new goal? (weight_loss, muscle_gain, weight_maintenance)")
+        goal_msg = await bot.wait_for('message', check=check, timeout=60)
+        goal = goal_msg.content.lower()
+        if goal in ['weight_loss', 'muscle_gain', 'weight_maintenance']:
+            break  # Exit the loop if input is valid
+        else:
+            await ctx.send("Please enter a valid goal from the list.")
+
+    # Update UserProfile instance
+    user_profile['age'] = age
+    user_profile['gender'] = gender
+    user_profile['weight'] = weight
+    user_profile['height'] = height
+    user_profile['activity_level'] = activity_level
+    user_profile['goal'] = goal
+
+    # Recalculate BMR, Total Calories, and Macronutrients
+    updated_user_profile = UserProfile(ctx.author.id, age, gender, weight, height, activity_level, goal)
+    updated_user_profile.calculate_bmr()
+    updated_user_profile.adjust_for_activity()
+    updated_user_profile.calculate_macros()
+    # Update the profile data
+    profiles[str(ctx.author.id)] = updated_user_profile.to_dict()
+    save_profiles(profiles)
+    await ctx.send(f"Your profile has been updated! Here are your new details:\n"
+                   f"BMR: {updated_user_profile.bmr:.2f} kcal\n"
+                   f"Total Calories: {updated_user_profile.total_calories:.2f} kcal\n"
+                   f"Protein: {updated_user_profile.protein:.2f} g\n"
+                   f"Fat: {updated_user_profile.fat:.2f} g\n"
+                   f"Carbs: {updated_user_profile.carbs:.2f} g")
