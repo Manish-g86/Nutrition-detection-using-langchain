@@ -1,0 +1,91 @@
+@bot.command()
+async def setup_profile(ctx):
+    """Prompt user for profile details if not already set up"""
+    profiles = load_profiles()
+    # Check if user already has a profile
+    if str(ctx.author.id) in profiles:
+        await ctx.send("You already have a profile set up.")
+        return
+    # If no profile exists, ask for details
+    await ctx.send("Let's set up your profile! Please answer the following questions:")
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+    # Age input with error handling
+    age = None
+    while age is None:
+        await ctx.send("What is your age?")
+        try:
+            age_msg = await bot.wait_for('message', check=check)
+            age = int(age_msg.content)  # Try to convert to integer
+            if age <= 0:
+                await ctx.send("Age must be a positive number. Please try again.")
+                age = None
+        except ValueError:
+            await ctx.send("Invalid input. Please enter a valid number for age.")
+
+    # Gender input with error handling
+    gender = None
+    while gender not in ['male', 'female']:
+        await ctx.send("What is your gender? (male/female)")
+        gender_msg = await bot.wait_for('message', check=check)
+        gender = gender_msg.content.lower()
+        if gender not in ['male', 'female']:
+            await ctx.send("Invalid input. Please enter 'male' or 'female'.")
+
+    # Weight input with error handling
+    weight = None
+    while weight is None:
+        await ctx.send("What is your weight in kg?")
+        try:
+            weight_msg = await bot.wait_for('message', check=check)
+            weight = float(weight_msg.content)  # Try to convert to float
+            if weight <= 0:
+                await ctx.send("Weight must be a positive number. Please try again.")
+                weight = None
+        except ValueError:
+            await ctx.send("Invalid input. Please enter a valid number for weight.")
+
+    # Height input with error handling
+    height = None
+    while height is None:
+        await ctx.send("What is your height in cm?")
+        try:
+            height_msg = await bot.wait_for('message', check=check)
+            height = float(height_msg.content)  # Try to convert to float
+            if height <= 0:
+                await ctx.send("Height must be a positive number. Please try again.")
+                height = None
+        except ValueError:
+            await ctx.send("Invalid input. Please enter a valid number for height.")
+    # Activity level input with error handling
+    activity_level = None
+    while activity_level not in ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extra_active']:
+        await ctx.send("What is your activity level? (sedentary, lightly_active, moderately_active, very_active, extra_active)")
+        activity_level_msg = await bot.wait_for('message', check=check)
+        activity_level = activity_level_msg.content.lower()
+        if activity_level not in ['sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extra_active']:
+            await ctx.send("Invalid input. Please choose one of the following: sedentary, lightly_active, moderately_active, very_active, extra_active.")
+    # Goal input with error handling
+    goal = None
+    while goal not in ['weight_loss', 'muscle_gain', 'weight_maintenance']:
+        await ctx.send("What is your goal? (weight_loss, muscle_gain, weight_maintenance)")
+        goal_msg = await bot.wait_for('message', check=check)
+        goal = goal_msg.content.lower()
+        if goal not in ['weight_loss', 'muscle_gain', 'weight_maintenance']:
+            await ctx.send("Invalid input. Please choose one of the following: weight_loss, muscle_gain, weight_maintenance.")
+    # Create UserProfile instance
+    user_profile = UserProfile(ctx.author.id, age, gender, weight, height, activity_level, goal)
+    # Calculate BMR, Total Calories, and Macronutrients
+    user_profile.calculate_bmr()
+    user_profile.adjust_for_activity()
+    user_profile.calculate_macros()
+    # Save the profile data
+    profiles[str(ctx.author.id)] = user_profile.to_dict()
+    save_profiles(profiles)
+    await ctx.send(f"Your profile has been set up! Here are your details:\n"
+                   f"BMR: {user_profile.bmr:.2f} kcal\n"
+                   f"Total Calories: {user_profile.total_calories:.2f} kcal\n"
+                   f"Protein: {user_profile.protein:.2f} g\n"
+                   f"Fat: {user_profile.fat:.2f} g\n"
+                   f"Carbs: {user_profile.carbs:.2f} g")
+    await ctx.send("You can now ask for nutrition or meal suggestions!")
