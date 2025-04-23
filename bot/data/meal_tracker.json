@@ -1,0 +1,18 @@
+{
+  "user_id_1": {
+    "YYYY-MM-DD": {
+      "breakfast": {
+        "meal": "string",
+        "serving_size": "string"
+      },
+      "lunch": {
+        "meal": "string",
+        "serving_size": "string"
+      },
+      "dinner": {
+        "meal": "string",
+        "serving_size": "string"
+      }
+    }
+  }
+}
