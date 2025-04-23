@@ -1,0 +1,31 @@
+def get_food_item(self, text: str) -> Optional[str]:
+        try:
+            food_item_prompt_template = PromptTemplate(
+                input_variables=["text"],
+                template="""You are a nutrition bot. The user will provide a description of food, and your task is to extract
+                the food items from the given input. Return the food items as a string.
+                If no food item is found, return '0' only return '0' no prefix or suffix only '0'.
+                Input: {text}
+                """
+            )
+            food_item_chain = LLMChain(llm=llm, prompt=food_item_prompt_template)
+            result = food_item_chain.run(text)  # Pass the variable text as input
+            return result
+        except Exception as e:
+            return "unknown"
+
+def refine_serving_size(self, text: str) -> str:
+    try:
+        serving_size_prompt_template = PromptTemplate(
+            input_variables=["text"],
+            template="""You are a nutrition bot. given a text input find if any serving size is mentioned in it,
+            If no serving size is mentioned, return '0'. You should handle any non-standard ways of describing portion sizes.
+            Input: {text}
+            """
+        )
+        serving_size_chain = LLMChain(llm=llm, prompt=serving_size_prompt_template)
+        # Running the chain with user input
+        result = serving_size_chain.run(text=text)
+        return result
+    except Exception as e:
+        return "unknown"
