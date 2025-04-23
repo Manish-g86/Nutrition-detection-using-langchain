@@ -1,0 +1,13 @@
+@bot.command()
+async def preferences(ctx):
+    """Display the food preferences for the user"""
+    preferences = load_food_preferences()
+    user_id = str(ctx.author.id)
+    # Check if the user has any food preferences saved
+    if user_id in preferences and preferences[user_id]["food_items"]:
+        # Get the list of food items for the user
+        food_items = preferences[user_id]["food_items"]
+        food_list = "\n".join(food_items)
+        await ctx.send(f"Your preferences are based on your activity:\n{food_list}")
+    else:
+        await ctx.send("You have no food preferences saved based on your activity.")
