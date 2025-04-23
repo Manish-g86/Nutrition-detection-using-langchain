@@ -1,0 +1,31 @@
+ def identify_intent(self, text: str) -> str:
+        try:
+            intent_prompt = """
+            You are a bot that identifies the intent of a user's statement.
+            The user might be talking about food or nutrition. Based on the input, you should classify it as either 'nutrition' ,'Suggest', 'non-nutrition'.
+
+            Examples of nutrition intent:
+            - "ate a dosa"
+            - "What are the calories in a dosa?"
+            - "How much protein is in an apple?"
+            - "I ate a sandwich for lunch, what's the nutritional value?"
+            - "How many carbs in a pizza slice?"
+            Examples of Suggest intent:
+            - suggest a breakfast
+            - suggest a lunch
+            - suggest a meal plan
+            - suggest a food item
+            Examples of non-nutrition-related statements:
+            - "What is the capital of France?"
+            - "How do I tie a tie?"
+            - "Tell me a joke."
+            - "What is gold?"
+            - "How to make a paper plane?"
+            Input: {text}
+            Please return 'nutrition' if the input is about food or nutrition, or 'non-nutrition' if it is not.
+            """
+            intent_chain = LLMChain(llm=llm, prompt=PromptTemplate(input_variables=["text"], template=intent_prompt))
+            intent = intent_chain.run(text)
+            return intent.strip().lower()
+        except Exception as e:
+            return "unknown"
