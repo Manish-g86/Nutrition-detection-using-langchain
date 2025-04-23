@@ -1,0 +1,18 @@
+def get_nutritional_breakdown(self, food_item: str, serving_size: str) -> Optional[str]:
+        try:
+            nutritional_breakdown_prompt_template = PromptTemplate(
+                input_variables=["text"],
+                template="""You are a nutrition bot. The user will provide a food item and serving size. Your task is to provide a detailed nutritional breakdown
+                for the given food item and serving size (specify best interval to eat the item-breakfast, lunch, dinner). The breakdown should include calories, protein, carbohydrates, fats, and vitamins.
+                Also, suggest an alternative healthy meal and its benefits briefly and concisely.
+                If the information is not available or incomplete, return 'Nutritional information is unavailable.'.
+                Input: {text}
+                """
+            )
+            nutritional_breakdown_chain = LLMChain(llm=llm, prompt=nutritional_breakdown_prompt_template)
+            text = food_item + " " + serving_size
+            # Running the chain with the user input
+            result = nutritional_breakdown_chain.run(text=text)
+            return result
+        except Exception as e:
+            return "Nutritional information is unavailable."
