@@ -1,0 +1,12 @@
+
+@bot.command()
+async def suggest(ctx):
+    """Suggest a meal"""
+    food_bot = FoodBot()
+    profiles = load_profiles()
+    user_profile = profiles.get(str(ctx.author.id), None)
+    if user_profile:
+        # Check if the user has a profile and call the `handle_suggestion` function
+        await food_bot.suggest_meal_with_restrictions(ctx)
+    else:
+        await ctx.send("Please set up your profile first using /setup_profile.")
