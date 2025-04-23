@@ -1,0 +1,15 @@
+{
+  "user_id": {
+    "age": "integer",
+    "gender": "string (male or female)",
+    "weight": "float (in kg)",
+    "height": "integer (in cm)",
+    "activity_level": "string (sedentary, lightly_active, moderately_active, very_active, extra_active)",
+    "goal": "string (weight_loss, muscle_gain, weight_maintenance)",
+    "bmr": "float (calories/day)",
+    "total_calories": "float (calories/day)",
+    "protein": "float (grams)",
+    "fat": "float (grams)",
+    "carbs": "float (grams)"
+  }
+}
